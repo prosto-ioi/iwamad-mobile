@@ -1,10 +1,35 @@
 import { Stack, useLocalSearchParams } from 'expo-router'
-import { StyleSheet, Text, View } from 'react-native'
-import { events } from '../../src/data/events'
+import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native'
+import { useEvents } from '../../src/hooks/useEvents'
 
 export default function EventScreen() {
   const { id } = useLocalSearchParams<{ id: string }>()
-  const event = events.find((e) => e.id === Number(id))
+  const { data, isPending, isError, error, refetch } = useEvents()
+
+  if (isPending) {
+    return (
+      <View style={styles.center}>
+        <Stack.Screen options={{ title: 'Event' }} />
+        <ActivityIndicator size="large" />
+        <Text style={styles.message}>Loading events</Text>
+      </View>
+    )
+  }
+
+  if (isError) {
+    return (
+      <View style={styles.center}>
+        <Stack.Screen options={{ title: 'Event' }} />
+        <Text style={styles.message}>Could not load events</Text>
+        <Text style={styles.message}>{error.message}</Text>
+        <Pressable style={styles.button} onPress={() => refetch()}>
+          <Text style={styles.buttonText}>Try again</Text>
+        </Pressable>
+      </View>
+    )
+  }
+
+  const event = data.find((e) => e.id === Number(id))
 
   if (!event) {
     return (
@@ -29,6 +54,23 @@ export default function EventScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, padding: 24, backgroundColor: '#ffffff' },
+  center: {
+    flex: 1,
+    padding: 24,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#ffffff',
+  },
+  message: { fontSize: 18, color: '#1f2937', textAlign: 'center', marginTop: 8 },
+  button: {
+    minHeight: 44,
+    paddingHorizontal: 20,
+    marginTop: 16,
+    justifyContent: 'center',
+    borderRadius: 8,
+    backgroundColor: '#2563eb',
+  },
+  buttonText: { fontSize: 16, color: '#ffffff', fontWeight: '600' },
   title: { fontSize: 28, fontWeight: '700', color: '#1f2937', marginBottom: 16 },
   line: { fontSize: 18, color: '#1f2937', marginBottom: 8 },
 })
