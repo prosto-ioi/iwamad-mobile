@@ -11,15 +11,12 @@ import {
 } from 'react-native'
 import EventRow from '../../src/components/EventRow'
 import { useEvents } from '../../src/hooks/useEvents'
+import { useSavedIds } from '../../src/hooks/useSavedIds'
 
 export default function EventsScreen() {
   const [query, setQuery] = useState('')
-  const [savedIds, setSavedIds] = useState<number[]>([])
+  const { savedIds, toggleSaved } = useSavedIds()
   const { data, isPending, isError, error, refetch, isRefetching } = useEvents()
-
-  const toggleSaved = (id: number) => {
-    setSavedIds((ids) => (ids.includes(id) ? ids.filter((x) => x !== id) : [...ids, id]))
-  }
 
   if (isPending) {
     return (
@@ -50,7 +47,7 @@ export default function EventsScreen() {
   return (
     <View style={styles.container}>
       <Text style={styles.hint}>
-        {`Long-press an event to save it. Saved: ${savedIds.length}`}
+        {`Swipe or long-press an event to save it. Saved: ${savedIds.length}`}
       </Text>
       <TextInput
         style={styles.input}
@@ -68,7 +65,7 @@ export default function EventsScreen() {
             event={item}
             saved={savedIds.includes(item.id)}
             onPress={() => router.push(`/events/${item.id}`)}
-            onLongPress={() => toggleSaved(item.id)}
+            onToggleSaved={() => toggleSaved(item.id)}
           />
         )}
         ListEmptyComponent={<Text style={styles.empty}>No events match</Text>}
